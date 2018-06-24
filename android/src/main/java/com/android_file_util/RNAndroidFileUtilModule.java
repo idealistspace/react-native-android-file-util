@@ -77,7 +77,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
   public RNAndroidFileUtilModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
-    reactContext.addActivityEventListener(mActivityResultListener);
+    reactContext.addActivityEventListener(mActivityEventListener);
   }
 
   @Override
