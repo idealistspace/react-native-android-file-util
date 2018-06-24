@@ -2,29 +2,28 @@
 package com.android_file_util;
 
 import android.content.Intent;
-import android.widget.Toast;
 import android.app.Activity;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+import android.util.Log;
+
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.BaseActivityEventListener;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
 
   private static final int WRITE_REQUEST_CODE = 43;
 
   private final ReactApplicationContext reactContext;
-
-  public RNAndroidFileUtilModule(ReactApplicationContext reactContext) {
-    super(reactContext);
-    this.reactContext = reactContext;
-  }
-
-  @Override
-  public String getName() {
-    return "RNAndroidFileUtil";
-  }
 
   private static final int IMAGE_PICKER_REQUEST = 467081;
   private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
@@ -60,7 +59,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
 
     private void alterDocument(Uri uri) {
       try {
-        ParcelFileDescriptor pfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+        ParcelFileDescriptor pfd = getCurrentActivity().getContentResolver().openFileDescriptor(uri, "w");
         FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
         fileOutputStream.write(("Overwritten by MyCloud at " + System.currentTimeMillis() + "\n").getBytes());
         // Let the document provider know you're done by closing the stream.
@@ -73,6 +72,18 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
       }
     }
   };
+
+
+  public RNAndroidFileUtilModule(ReactApplicationContext reactContext) {
+    super(reactContext);
+    this.reactContext = reactContext;
+    reactContext.addActivityEventListener(mActivityResultListener);
+  }
+
+  @Override
+  public String getName() {
+    return "RNAndroidFileUtil";
+  }
 
   @ReactMethod
   private void createFile(String mimeType, String fileName, final Promise promise) {
@@ -102,10 +113,5 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
       mPickerPromise.reject(E_FAILED_TO_SHOW_PICKER, e);
       mPickerPromise = null;
     }
-  }
-
-  @ReactMethod
-  public void show(String message) {
-    Toast.makeText(getReactApplicationContext(), message, Toast.LENGTH_LONG).show();
   }
 }
