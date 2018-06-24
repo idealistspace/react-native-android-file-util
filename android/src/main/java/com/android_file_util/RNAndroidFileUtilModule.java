@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -19,25 +18,25 @@ import com.facebook.react.bridge.BaseActivityEventListener;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
 
   private static final int WRITE_REQUEST_CODE = 43;
-
-  private final ReactApplicationContext reactContext;
-
-  private static final int IMAGE_PICKER_REQUEST = 467081;
   private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
   private static final String E_PICKER_CANCELLED = "E_PICKER_CANCELLED";
   private static final String E_FAILED_TO_SHOW_PICKER = "E_FAILED_TO_SHOW_PICKER";
   private static final String E_NO_DATA_FOUND = "E_NO_DATA_FOUND";
 
+  private final ReactApplicationContext reactContext;
+
   private Promise mPickerPromise;
+  private String fileContent;
 
   private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
 
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {
-      if (requestCode == IMAGE_PICKER_REQUEST) {
+      if (requestCode == WRITE_REQUEST_CODE) {
         if (mPickerPromise != null) {
           if (resultCode == Activity.RESULT_CANCELED) {
             mPickerPromise.reject(E_PICKER_CANCELLED, "File picker was cancelled");
@@ -51,8 +50,14 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
               mPickerPromise.resolve(uri.toString());
             }
           }
-
           mPickerPromise = null;
+        } else {
+          if (resultCode == Activity.RESULT_OK) {
+            Uri uri = intent.getData();
+            if (uri != null) {
+              alterDocument(uri);
+            }
+          }
         }
       }
     }
@@ -61,7 +66,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
       try {
         ParcelFileDescriptor pfd = getCurrentActivity().getContentResolver().openFileDescriptor(uri, "w");
         FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
-        fileOutputStream.write(("Overwritten by MyCloud at " + System.currentTimeMillis() + "\n").getBytes());
+        fileOutputStream.write(fileContent.getBytes());
         // Let the document provider know you're done by closing the stream.
         fileOutputStream.close();
         pfd.close();
@@ -72,7 +77,6 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
       }
     }
   };
-
 
   public RNAndroidFileUtilModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -86,7 +90,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  private void createFile(String mimeType, String fileName, final Promise promise) {
+  private void createFile(String mimeType, String fileName, String json, final Promise promise) {
     Activity currentActivity = getCurrentActivity();
 
     if (currentActivity == null) {
@@ -96,6 +100,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
 
     // Store the promise to resolve/reject when picker returns data
     mPickerPromise = promise;
+    fileContent = json;
 
     try {
       Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
