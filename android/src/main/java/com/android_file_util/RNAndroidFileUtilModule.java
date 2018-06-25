@@ -90,7 +90,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  private void createFile(String mimeType, String fileName, String json, final Promise promise) {
+  private void createFile(String mimeType, String fileName, String content, final Promise promise) {
     Activity currentActivity = getCurrentActivity();
 
     if (currentActivity == null) {
@@ -100,7 +100,7 @@ public class RNAndroidFileUtilModule extends ReactContextBaseJavaModule {
 
     // Store the promise to resolve/reject when picker returns data
     mPickerPromise = promise;
-    fileContent = json;
+    fileContent = content;
 
     try {
       Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
