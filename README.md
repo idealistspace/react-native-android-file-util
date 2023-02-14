@@ -10,8 +10,6 @@ The following won't work, because this is currently unpublished.
 You can download this repo and install it through local:
 `$ npm install ./wherever-you-save-it`
 
-You want this published? Let me know, and I can do the leg work.
-
 ### Mostly automatic installation
 
 `$ react-native link react-native-android-file-util`
