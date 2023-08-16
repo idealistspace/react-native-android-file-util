@@ -9,6 +9,10 @@
   "keywords": [
     "react-native"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/idealistspace/react-native-android-file-util.git"
+  },
   "author": "Shaomeng Zhang",
   "license": "MIT",
   "peerDependencies": {
